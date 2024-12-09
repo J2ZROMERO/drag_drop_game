@@ -1,30 +1,52 @@
-import React, { useState } from "react";
-import GridLayout, { WidthProvider } from "react-grid-layout";
+import { useState } from "react";
+import GridLayout, { WidthProvider, Layout } from "react-grid-layout";
 
 import "react-grid-layout/css/styles.css";
 import "./App.css";
 import "react-resizable/css/styles.css";
 
 /**
+ * Interface for items in the grid layout
+ */
+interface LayoutItem {
+  i: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/**
+ * Interface for items in the draggable menu
+ */
+interface MenuItem {
+  id: number;
+  url: string;
+}
+
+/**
+ * Interface for items in the grid state
+ */
+interface GridItem {
+  id: number;
+  name: string;
+  content: string;
+  itemId?: number;
+  url?: string;
+  isOnGrid?: boolean;
+}
+
+/**
  * Game component implementing a drag-and-drop grid layout game.
  * @component
  * @returns {JSX.Element} The rendered Game component.
  */
-const Game = () => {
+const Game = (): JSX.Element => {
   // Wrap GridLayout with WidthProvider for responsive resizing
   const ResponsiveGridLayout = WidthProvider(GridLayout);
 
-  /**
-   * @typedef {Object} LayoutItem
-   * @property {string} i - Unique identifier for the item.
-   * @property {number} x - Horizontal position on the grid.
-   * @property {number} y - Vertical position on the grid.
-   * @property {number} w - Width of the grid item in columns.
-   * @property {number} h - Height of the grid item in rows.
-   */
-
   // State to track the layout configuration of the grid
-  const [layout, setLayout] = useState([
+  const layout: LayoutItem[] = [
     { i: "1", x: 0, y: 0, w: 4, h: 2 },
     { i: "2", x: 4, y: 0, w: 4, h: 2 },
     { i: "3", x: 8, y: 0, w: 4, h: 2 },
@@ -34,29 +56,72 @@ const Game = () => {
     { i: "7", x: 0, y: 2, w: 4, h: 2 },
     { i: "8", x: 4, y: 2, w: 4, h: 2 },
     { i: "9", x: 8, y: 4, w: 4, h: 2 },
-  ]);
+  ];
 
   /**
    * State to track the items placed in the grid.
    * Each item includes metadata such as name, description, and content.
    */
-  const [gridItems, setGridItems] = useState([
-    { id: 1, name: "Angular", content: "A popular framework for building dynamic web applications." },
-    { id: 2, name: "AWS", content: "A cloud platform offering a variety of services for development and hosting." },
-    { id: 3, name: "Bootstrap", content: "A popular CSS framework for building responsive web designs." },
-    { id: 4, name: "Docker", content: "A platform for developing, shipping, and running applications in containers." },
-    { id: 5, name: "Java", content: "A versatile programming language used for web, desktop, and mobile applications." },
-    { id: 6, name: "JavaScript", content: "A core programming language for building interactive web pages." },
-    { id: 7, name: "Python", content: "A programming language known for its simplicity and versatility in data science and web development." },
-    { id: 8, name: "React", content: "A JavaScript library for building user interfaces with reusable components." },
-    { id: 9, name: "Vite", content: "A modern build tool for faster development with a lean development server." },
+  const [gridItems, setGridItems] = useState<GridItem[]>([
+    {
+      id: 1,
+      name: "Angular",
+      content: "A popular framework for building dynamic web applications.",
+    },
+    {
+      id: 2,
+      name: "AWS",
+      content:
+        "A cloud platform offering a variety of services for development and hosting.",
+    },
+    {
+      id: 3,
+      name: "Bootstrap",
+      content: "A popular CSS framework for building responsive web designs.",
+    },
+    {
+      id: 4,
+      name: "Docker",
+      content:
+        "A platform for developing, shipping, and running applications in containers.",
+    },
+    {
+      id: 5,
+      name: "Java",
+      content:
+        "A versatile programming language used for web, desktop, and mobile applications.",
+    },
+    {
+      id: 6,
+      name: "JavaScript",
+      content:
+        "A core programming language for building interactive web pages.",
+    },
+    {
+      id: 7,
+      name: "Python",
+      content:
+        "A programming language known for its simplicity and versatility in data science and web development.",
+    },
+    {
+      id: 8,
+      name: "React",
+      content:
+        "A JavaScript library for building user interfaces with reusable components.",
+    },
+    {
+      id: 9,
+      name: "Vite",
+      content:
+        "A modern build tool for faster development with a lean development server.",
+    },
   ]);
 
   /**
    * State to track the draggable menu items.
    * Each item includes metadata such as the image URL.
    */
-  const [menuItems, setMenuItems] = useState([
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([
     { id: 6, url: "/src/assets/js.png" },
     { id: 7, url: "/src/assets/python.png" },
     { id: 8, url: "/src/assets/react.png" },
@@ -71,9 +136,9 @@ const Game = () => {
   /**
    * Handle dropping an item into a grid cell.
    * @param {string} gridId - The ID of the grid cell.
-   * @param {Object} data - The data of the dropped item.
+   * @param {MenuItem} data - The data of the dropped item (from the menu).
    */
-  const handleDrop = (gridId, data) => {
+  const handleDrop = (gridId: string, data: MenuItem): void => {
     const element = document.getElementById(gridId);
 
     // Check if the grid cell already contains an image
@@ -93,7 +158,11 @@ const Game = () => {
 
     // Update the grid items state
     setGridItems((prev) =>
-      prev.map((item) => (item.id == gridId ? { ...item, ...newDatatoGriposition } : item))
+      prev.map((item) =>
+        item.id.toString() === gridId
+          ? { ...item, ...newDatatoGriposition }
+          : item
+      )
     );
 
     // Remove the item from the menu
@@ -104,20 +173,30 @@ const Game = () => {
    * Handle returning an item from the grid to the menu.
    * @param {string} gridId - The ID of the grid cell.
    */
-  const handleReturnToMenu = (gridId) => {
-    const currentGridContent = gridItems.find((item) => item.id == gridId);
+  const handleReturnToMenu = (gridId: string): void => {
+    const currentGridContent = gridItems.find(
+      (item) => item.id.toString() === gridId
+    );
 
-    const removeImageToGrid = { url: null, isOnGrid: null, itemId: null };
+    if (!currentGridContent) return;
+
+    const removeImageToGrid = {
+      url: undefined,
+      isOnGrid: undefined,
+      itemId: undefined,
+    };
 
     // Update the grid items state to remove the item
     setGridItems((prev) =>
-      prev.map((item) => (item.id == gridId ? { ...item, ...removeImageToGrid } : item))
+      prev.map((item) =>
+        item.id.toString() === gridId ? { ...item, ...removeImageToGrid } : item
+      )
     );
 
     // Add the item back to the menu
-    const currentMenuItem = {
-      id: currentGridContent.itemId,
-      url: currentGridContent.url,
+    const currentMenuItem: MenuItem = {
+      id: currentGridContent.itemId!,
+      url: currentGridContent.url!,
     };
     setMenuItems((prev) => [...prev, currentMenuItem]);
   };
@@ -127,14 +206,21 @@ const Game = () => {
    * @param {string} id - The ID of the grid cell.
    * @returns {JSX.Element} The content of the grid cell.
    */
-  const renderGridContent = (id) => {
-    const filterElement = { ...gridItems.find((item) => item.id == id) };
-
+  const renderGridContent = (id: string): JSX.Element => {
+    const filterElement = {
+      ...gridItems.find((item) => item.id.toString() === id),
+    };
     return !filterElement.url ? (
       <div className="grid-content">{filterElement.content}</div>
     ) : (
       <>
-        <img src={filterElement.url} alt="" width={50} height={50} key={filterElement.id} />
+        <img
+          src={filterElement.url}
+          alt=""
+          width={50}
+          height={50}
+          key={filterElement.id}
+        />
         {filterElement.isOnGrid && (
           <button
             onClick={() => handleReturnToMenu(id)}
@@ -159,8 +245,8 @@ const Game = () => {
    * Validate the placement of all grid items.
    * Alerts if all items are correctly placed or if there are issues.
    */
-  const validatePlacement = () => {
-    const allCorrect = gridItems.every((cell) => +cell.itemId === +cell.id);
+  const validatePlacement = (): void => {
+    const allCorrect = gridItems.every((cell) => +cell.itemId === cell.id);
 
     if (allCorrect) {
       alert("All items are correctly placed!");
@@ -185,7 +271,9 @@ const Game = () => {
             height={50}
             key={item.id}
             draggable
-            onDragStart={(e) => e.dataTransfer.setData("application/json", JSON.stringify(item))}
+            onDragStart={(e) =>
+              e.dataTransfer.setData("application/json", JSON.stringify(item))
+            }
           />
         ))}
       </div>
@@ -209,7 +297,7 @@ const Game = () => {
             onDrop={(e) => {
               e.preventDefault();
               const data = e.dataTransfer.getData("application/json");
-              const parseData = JSON.parse(data);
+              const parseData: MenuItem = JSON.parse(data);
               handleDrop(grid.i, parseData);
             }}
           >
