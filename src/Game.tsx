@@ -1,5 +1,5 @@
 import { useState } from "react";
-import GridLayout, { WidthProvider, Layout } from "react-grid-layout";
+import GridLayout, { WidthProvider } from "react-grid-layout";
 
 import "react-grid-layout/css/styles.css";
 import "./App.css";
