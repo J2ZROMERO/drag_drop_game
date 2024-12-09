@@ -246,7 +246,9 @@ const Game = (): JSX.Element => {
    * Alerts if all items are correctly placed or if there are issues.
    */
   const validatePlacement = (): void => {
-    const allCorrect = gridItems.every((cell) => +cell.itemId === cell.id);
+    const allCorrect = gridItems.every(
+      (cell: GridItem) => +cell?.itemId! === cell.id
+    );
 
     if (allCorrect) {
       alert("All items are correctly placed!");
